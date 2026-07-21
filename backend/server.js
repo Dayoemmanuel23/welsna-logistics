@@ -1,0 +1,104 @@
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+
+import connectDB from "./config/db.js";
+
+import authRoutes from "./routes/authRoutes.js";
+import shipmentRoutes from "./routes/shipmentRoutes.js";
+import quoteRoutes from "./routes/quoteRoutes.js";
+import contactRoutes from "./routes/contactRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+
+dotenv.config();
+
+// Connect Database
+connectDB();
+
+const app = express();
+
+/*
+|--------------------------------------------------------------------------
+| Middleware
+|--------------------------------------------------------------------------
+*/
+
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true,
+  })
+);
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+/*
+|--------------------------------------------------------------------------
+| Routes
+|--------------------------------------------------------------------------
+*/
+
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Welcome to Welsna Nigeria Logistics API",
+    version: "1.0.0",
+  });
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    status: "OK",
+    message: "Server is healthy",
+  });
+});
+
+app.use("/api/auth", authRoutes);
+app.use("/api/shipments", shipmentRoutes);
+app.use("/api/quotes", quoteRoutes);
+app.use("/api/contacts", contactRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/users", userRoutes);
+
+/*
+|--------------------------------------------------------------------------
+| 404 Handler
+|--------------------------------------------------------------------------
+*/
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+  });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Global Error Handler
+|--------------------------------------------------------------------------
+*/
+
+app.use((err, req, res, next) => {
+  console.error(err);
+
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Start Server
+|--------------------------------------------------------------------------
+*/
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Welsna Backend running on port ${PORT}`);
+});
