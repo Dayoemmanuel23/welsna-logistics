@@ -45,8 +45,8 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
-    message: "Welcome to Welsna Nigeria Logistics API",
-    version: "1.0.0",
+    message: "Backend Updated Successfully",
+    version: "2.0.0",
   });
 });
 
