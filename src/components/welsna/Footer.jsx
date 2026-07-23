@@ -36,9 +36,9 @@ export default function Footer() {
 
   return (
     <footer
-      id="contact"
-      className="bg-navy text-slate-300 pt-16 pb-8 relative overflow-hidden"
-    >
+  id="footer"
+  className="bg-navy text-slate-300 pt-16 pb-8 relative overflow-hidden"
+>
       <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-accent/5 rounded-full blur-[120px]" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
