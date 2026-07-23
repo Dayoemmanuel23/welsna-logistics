@@ -12,19 +12,25 @@ console.log(
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: Number(process.env.EMAIL_PORT),
-  secure: false,
+  secure: process.env.MAIL_SECURE === "true",
 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD,
   },
 
-  logger: true,
-  debug: true,
+  name: "mail.welsnanigerialtd.com",
 
   tls: {
     rejectUnauthorized: false,
   },
+
+  connectionTimeout: 30000,
+  greetingTimeout: 30000,
+  socketTimeout: 30000,
+
+  logger: true,
+  debug: true,
 });
 
 transporter.verify((error, success) => {
