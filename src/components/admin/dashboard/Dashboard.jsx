@@ -5,46 +5,63 @@ import ShipmentChart from "./ShipmentChart";
 import QuoteChart from "./QuoteChart";
 import StatusChart from "./StatusChart";
 
-export default function Dashboard() {
-  const [dashboard, setDashboard] = useState({
-    stats: {
-      totalShipments: 0,
-      activeShipments: 0,
-      deliveredShipments: 0,
-      totalQuotes: 0,
-      totalContacts: 0,
-      totalUsers: 0,
-    },
-    shipmentStatus: [],
-    monthlyShipments: [],
-    monthlyQuotes: [],
-    recentShipments: [],
-    recentQuotes: [],
-    recentContacts: [],
-  });
+const initialDashboard = {
+  stats: {
+    totalShipments: 0,
+    activeShipments: 0,
+    deliveredShipments: 0,
+    totalQuotes: 0,
+    totalContacts: 0,
+    totalUsers: 0,
+  },
+  shipmentStatus: [],
+  monthlyShipments: [],
+  monthlyQuotes: [],
+  recentShipments: [],
+  recentQuotes: [],
+  recentContacts: [],
+};
 
+export default function Dashboard() {
+  const [dashboard, setDashboard] = useState(initialDashboard);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDashboard();
+    loadDashboard();
+
+    const interval = setInterval(() => {
+      loadDashboard();
+    }, 60000);
+
+    return () => clearInterval(interval);
   }, []);
 
-  async function fetchDashboard() {
+  const loadDashboard = async () => {
     try {
       const { data } = await apiClient.get("/dashboard/stats");
 
-      setDashboard(data);
-    } catch (err) {
-      console.error(err);
+      setDashboard({
+        stats: data.stats || initialDashboard.stats,
+        shipmentStatus: data.shipmentStatus || [],
+        monthlyShipments: data.monthlyShipments || [],
+        monthlyQuotes: data.monthlyQuotes || [],
+        recentShipments: data.recentShipments || [],
+        recentQuotes: data.recentQuotes || [],
+        recentContacts: data.recentContacts || [],
+      });
+    } catch (error) {
+      console.error("Dashboard Error:", error);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   if (loading) {
     return (
-      <div className="p-10 text-center text-lg">
-        Loading Dashboard...
+      <div className="flex items-center justify-center h-[70vh]">
+        <div className="text-lg font-semibold animate-pulse">
+          Loading Dashboard...
+        </div>
       </div>
     );
   }
@@ -68,63 +85,45 @@ export default function Dashboard() {
 
       {/* Statistics */}
 
-      <div className="grid lg:grid-cols-3 xl:grid-cols-6 gap-6">
+      <div className="grid gap-6 lg:grid-cols-3 xl:grid-cols-6">
 
         <div className="bg-white rounded-xl shadow p-6">
-          <p className="text-gray-500">
-            Shipments
-          </p>
-
+          <p className="text-gray-500">Shipments</p>
           <h2 className="text-4xl font-bold mt-2">
             {stats.totalShipments}
           </h2>
         </div>
 
         <div className="bg-white rounded-xl shadow p-6">
-          <p className="text-gray-500">
-            Active
-          </p>
-
+          <p className="text-gray-500">Active</p>
           <h2 className="text-4xl font-bold mt-2 text-blue-600">
             {stats.activeShipments}
           </h2>
         </div>
 
         <div className="bg-white rounded-xl shadow p-6">
-          <p className="text-gray-500">
-            Delivered
-          </p>
-
+          <p className="text-gray-500">Delivered</p>
           <h2 className="text-4xl font-bold mt-2 text-green-600">
             {stats.deliveredShipments}
           </h2>
         </div>
 
         <div className="bg-white rounded-xl shadow p-6">
-          <p className="text-gray-500">
-            Quotes
-          </p>
-
+          <p className="text-gray-500">Quotes</p>
           <h2 className="text-4xl font-bold mt-2 text-orange-600">
             {stats.totalQuotes}
           </h2>
         </div>
 
         <div className="bg-white rounded-xl shadow p-6">
-          <p className="text-gray-500">
-            Contacts
-          </p>
-
+          <p className="text-gray-500">Contacts</p>
           <h2 className="text-4xl font-bold mt-2 text-cyan-600">
             {stats.totalContacts}
           </h2>
         </div>
 
         <div className="bg-white rounded-xl shadow p-6">
-          <p className="text-gray-500">
-            Users
-          </p>
-
+          <p className="text-gray-500">Users</p>
           <h2 className="text-4xl font-bold mt-2 text-purple-600">
             {stats.totalUsers}
           </h2>
@@ -145,6 +144,8 @@ export default function Dashboard() {
         />
 
       </div>
+
+      {/* Shipment Status */}
 
       <div className="grid lg:grid-cols-3 gap-8">
 
@@ -173,7 +174,8 @@ export default function Dashboard() {
                   <div>
 
                     <p className="font-semibold">
-                      {shipment.tracking_number}
+                      {shipment.trackingNumber ||
+                        shipment.tracking_number}
                     </p>
 
                     <p className="text-sm text-gray-500">
@@ -196,7 +198,7 @@ export default function Dashboard() {
 
       </div>
 
-      {/* Bottom Section */}
+      {/* Bottom */}
 
       <div className="grid lg:grid-cols-2 gap-8">
 
@@ -224,7 +226,7 @@ export default function Dashboard() {
 
                   <p className="text-sm text-gray-500">
                     ₦{Number(
-                      quote.estimated_cost || 0
+                      quote.estimated_cost ?? 0
                     ).toLocaleString()}
                   </p>
 
@@ -259,7 +261,7 @@ export default function Dashboard() {
                   </p>
 
                   <p className="text-sm text-gray-500">
-                    {contact.subject}
+                    {contact.subject || "No Subject"}
                   </p>
 
                 </div>

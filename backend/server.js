@@ -29,6 +29,7 @@ const allowedOrigins = [
   "https://welsna-frontend.onrender.com",
 ];
 
+app.use("/api/dashboard", dashboardRoutes);
 app.use(
   cors({
     origin: function (origin, callback) {
