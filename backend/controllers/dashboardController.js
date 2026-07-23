@@ -10,6 +10,8 @@ export const getDashboard = async (req, res) => {
       totalQuotes,
       totalContacts,
       totalUsers,
+      activeShipments,
+      deliveredShipments,
       recentShipments,
       recentQuotes,
       recentContacts,
@@ -18,6 +20,10 @@ export const getDashboard = async (req, res) => {
       Quote.countDocuments(),
       Contact.countDocuments(),
       User.countDocuments(),
+
+      Shipment.countDocuments({ status: "Processing" }),
+
+      Shipment.countDocuments({ status: "Delivered" }),
 
       Shipment.find()
         .sort({ createdAt: -1 })
@@ -32,7 +38,6 @@ export const getDashboard = async (req, res) => {
         .limit(5),
     ]);
 
-    // Monthly Quote Statistics
     const monthlyQuotes = await Quote.aggregate([
       {
         $group: {
@@ -47,17 +52,44 @@ export const getDashboard = async (req, res) => {
       },
     ]);
 
+    const monthlyShipments = await Shipment.aggregate([
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          total: { $sum: 1 },
+        },
+      },
+      {
+        $sort: {
+          _id: 1,
+        },
+      },
+    ]);
+
+    const shipmentStatus = await Shipment.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          value: { $sum: 1 },
+        },
+      },
+    ]);
+
     res.json({
       success: true,
 
       stats: {
         totalShipments,
+        activeShipments,
+        deliveredShipments,
         totalQuotes,
         totalContacts,
         totalUsers,
       },
 
       dashboard: {
+        shipmentStatus,
+        monthlyShipments,
         monthlyQuotes,
         recentShipments,
         recentQuotes,
@@ -66,13 +98,11 @@ export const getDashboard = async (req, res) => {
     });
 
   } catch (error) {
-
     console.error(error);
 
     res.status(500).json({
       success: false,
       message: "Server Error",
     });
-
   }
 };

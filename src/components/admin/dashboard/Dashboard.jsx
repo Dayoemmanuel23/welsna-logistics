@@ -14,6 +14,7 @@ const initialDashboard = {
     totalContacts: 0,
     totalUsers: 0,
   },
+
   shipmentStatus: [],
   monthlyShipments: [],
   monthlyQuotes: [],
@@ -29,36 +30,52 @@ export default function Dashboard() {
   useEffect(() => {
     loadDashboard();
 
-    const interval = setInterval(() => {
-      loadDashboard();
-    }, 60000);
+    const interval = setInterval(loadDashboard, 60000);
 
     return () => clearInterval(interval);
   }, []);
 
   const loadDashboard = async () => {
-    try {
-      const { data } = await apiClient.get("/dashboard");
+  try {
+    const { data } = await apiClient.get("/dashboard");
 
-      setDashboard({
-        stats: data.stats || initialDashboard.stats,
-        shipmentStatus: data.shipmentStatus || [],
-        monthlyShipments: data.monthlyShipments || [],
-        monthlyQuotes: data.monthlyQuotes || [],
-        recentShipments: data.recentShipments || [],
-        recentQuotes: data.recentQuotes || [],
-        recentContacts: data.recentContacts || [],
-      });
-    } catch (error) {
-      console.error("Dashboard Error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const dashboardData = data.dashboard || {};
+
+    setDashboard({
+      stats: {
+        ...initialDashboard.stats,
+        ...(data.stats || {}),
+      },
+
+      shipmentStatus: dashboardData.shipmentStatus || [],
+
+      monthlyShipments:
+        dashboardData.monthlyShipments || [],
+
+      monthlyQuotes:
+        dashboardData.monthlyQuotes || [],
+
+      recentShipments:
+        dashboardData.recentShipments || [],
+
+      recentQuotes:
+        dashboardData.recentQuotes || [],
+
+      recentContacts:
+        dashboardData.recentContacts || [],
+    });
+  } catch (error) {
+    console.error("Dashboard Error:", error);
+
+    setDashboard(initialDashboard);
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[70vh]">
+      <div className="flex h-[70vh] items-center justify-center">
         <div className="text-lg font-semibold animate-pulse">
           Loading Dashboard...
         </div>
@@ -74,9 +91,7 @@ export default function Dashboard() {
       {/* Header */}
 
       <div>
-        <h1 className="text-3xl font-bold">
-          Dashboard
-        </h1>
+        <h1 className="text-3xl font-bold">Dashboard</h1>
 
         <p className="text-gray-500 mt-1">
           Welcome to the Welsna Logistics Admin Dashboard
@@ -87,47 +102,37 @@ export default function Dashboard() {
 
       <div className="grid gap-6 lg:grid-cols-3 xl:grid-cols-6">
 
-        <div className="bg-white rounded-xl shadow p-6">
-          <p className="text-gray-500">Shipments</p>
-          <h2 className="text-4xl font-bold mt-2">
-            {stats.totalShipments}
-          </h2>
-        </div>
+        <StatCard title="Shipments" value={stats.totalShipments} />
 
-        <div className="bg-white rounded-xl shadow p-6">
-          <p className="text-gray-500">Active</p>
-          <h2 className="text-4xl font-bold mt-2 text-blue-600">
-            {stats.activeShipments}
-          </h2>
-        </div>
+        <StatCard
+          title="Active"
+          value={stats.activeShipments}
+          color="text-blue-600"
+        />
 
-        <div className="bg-white rounded-xl shadow p-6">
-          <p className="text-gray-500">Delivered</p>
-          <h2 className="text-4xl font-bold mt-2 text-green-600">
-            {stats.deliveredShipments}
-          </h2>
-        </div>
+        <StatCard
+          title="Delivered"
+          value={stats.deliveredShipments}
+          color="text-green-600"
+        />
 
-        <div className="bg-white rounded-xl shadow p-6">
-          <p className="text-gray-500">Quotes</p>
-          <h2 className="text-4xl font-bold mt-2 text-orange-600">
-            {stats.totalQuotes}
-          </h2>
-        </div>
+        <StatCard
+          title="Quotes"
+          value={stats.totalQuotes}
+          color="text-orange-600"
+        />
 
-        <div className="bg-white rounded-xl shadow p-6">
-          <p className="text-gray-500">Contacts</p>
-          <h2 className="text-4xl font-bold mt-2 text-cyan-600">
-            {stats.totalContacts}
-          </h2>
-        </div>
+        <StatCard
+          title="Contacts"
+          value={stats.totalContacts}
+          color="text-cyan-600"
+        />
 
-        <div className="bg-white rounded-xl shadow p-6">
-          <p className="text-gray-500">Users</p>
-          <h2 className="text-4xl font-bold mt-2 text-purple-600">
-            {stats.totalUsers}
-          </h2>
-        </div>
+        <StatCard
+          title="Users"
+          value={stats.totalUsers}
+          color="text-purple-600"
+        />
 
       </div>
 
@@ -153,48 +158,38 @@ export default function Dashboard() {
           data={dashboard.shipmentStatus}
         />
 
-        <div className="lg:col-span-2 bg-white rounded-xl shadow p-6">
+        <Card title="Recent Shipments">
 
-          <h2 className="text-xl font-bold mb-5">
-            Recent Shipments
-          </h2>
+          {dashboard.recentShipments.length === 0 ? (
+            <Empty text="No shipments available." />
+          ) : (
+            dashboard.recentShipments.map((shipment) => (
+              <div
+                key={shipment._id}
+                className="flex justify-between border-b pb-3"
+              >
+                <div>
 
-          <div className="space-y-4">
+                  <p className="font-semibold">
+                    {shipment.trackingNumber ||
+                      shipment.tracking_number}
+                  </p>
 
-            {dashboard.recentShipments.length === 0 ? (
-              <p className="text-gray-500">
-                No shipments available.
-              </p>
-            ) : (
-              dashboard.recentShipments.map((shipment) => (
-                <div
-                  key={shipment._id}
-                  className="flex justify-between border-b pb-3"
-                >
-                  <div>
-
-                    <p className="font-semibold">
-                      {shipment.trackingNumber ||
-                        shipment.tracking_number}
-                    </p>
-
-                    <p className="text-sm text-gray-500">
-                      {shipment.origin} → {shipment.destination}
-                    </p>
-
-                  </div>
-
-                  <span className="text-sm font-medium text-cyan-600">
-                    {shipment.status}
-                  </span>
+                  <p className="text-sm text-gray-500">
+                    {shipment.origin} → {shipment.destination}
+                  </p>
 
                 </div>
-              ))
-            )}
 
-          </div>
+                <span className="text-cyan-600 text-sm font-medium">
+                  {shipment.status}
+                </span>
 
-        </div>
+              </div>
+            ))
+          )}
+
+        </Card>
 
       </div>
 
@@ -202,78 +197,93 @@ export default function Dashboard() {
 
       <div className="grid lg:grid-cols-2 gap-8">
 
-        <div className="bg-white rounded-xl shadow p-6">
+        <Card title="Recent Quotes">
 
-          <h2 className="text-xl font-bold mb-5">
-            Recent Quotes
-          </h2>
+          {dashboard.recentQuotes.length === 0 ? (
+            <Empty text="No quote requests." />
+          ) : (
+            dashboard.recentQuotes.map((quote) => (
+              <div
+                key={quote._id}
+                className="border-b pb-3"
+              >
+                <p className="font-semibold">
+                  {quote.origin} → {quote.destination}
+                </p>
 
-          <div className="space-y-3">
+                <p className="text-sm text-gray-500">
+                  ₦
+                  {Number(
+                    quote.estimated_cost ?? quote.estimatedCost ?? 0
+                  ).toLocaleString()}
+                </p>
 
-            {dashboard.recentQuotes.length === 0 ? (
-              <p className="text-gray-500">
-                No quote requests.
-              </p>
-            ) : (
-              dashboard.recentQuotes.map((quote) => (
-                <div
-                  key={quote._id}
-                  className="border-b pb-3"
-                >
-                  <p className="font-semibold">
-                    {quote.origin} → {quote.destination}
-                  </p>
+              </div>
+            ))
+          )}
 
-                  <p className="text-sm text-gray-500">
-                    ₦{Number(
-                      quote.estimated_cost ?? 0
-                    ).toLocaleString()}
-                  </p>
+        </Card>
 
-                </div>
-              ))
-            )}
+        <Card title="Recent Contacts">
 
-          </div>
+          {dashboard.recentContacts.length === 0 ? (
+            <Empty text="No contact messages." />
+          ) : (
+            dashboard.recentContacts.map((contact) => (
+              <div
+                key={contact._id}
+                className="border-b pb-3"
+              >
+                <p className="font-semibold">
+                  {contact.name}
+                </p>
 
-        </div>
+                <p className="text-sm text-gray-500">
+                  {contact.subject || "No Subject"}
+                </p>
 
-        <div className="bg-white rounded-xl shadow p-6">
+              </div>
+            ))
+          )}
 
-          <h2 className="text-xl font-bold mb-5">
-            Recent Contacts
-          </h2>
-
-          <div className="space-y-3">
-
-            {dashboard.recentContacts.length === 0 ? (
-              <p className="text-gray-500">
-                No contact messages.
-              </p>
-            ) : (
-              dashboard.recentContacts.map((contact) => (
-                <div
-                  key={contact._id}
-                  className="border-b pb-3"
-                >
-                  <p className="font-semibold">
-                    {contact.name}
-                  </p>
-
-                  <p className="text-sm text-gray-500">
-                    {contact.subject || "No Subject"}
-                  </p>
-
-                </div>
-              ))
-            )}
-
-          </div>
-
-        </div>
+        </Card>
 
       </div>
 
     </div>
+  );
+}
+
+function StatCard({ title, value, color = "" }) {
+  return (
+    <div className="bg-white rounded-xl shadow p-6">
+      <p className="text-gray-500">{title}</p>
+
+      <h2 className={`text-4xl font-bold mt-2 ${color}`}>
+        {value}
+      </h2>
+    </div>
+  );
+}
+
+function Card({ title, children }) {
+  return (
+    <div className="bg-white rounded-xl shadow p-6">
+      <h2 className="text-xl font-bold mb-5">
+        {title}
+      </h2>
+
+      <div className="space-y-3">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function Empty({ text }) {
+  return (
+    <p className="text-gray-500">
+      {text}
+    </p>
   );
 }
