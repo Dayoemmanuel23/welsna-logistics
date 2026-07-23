@@ -48,61 +48,60 @@ export const createShipment = async (req, res) => {
 
     // Email receiver (optional)
 
-    if (receiverEmail) {
-      try {
-        await sendEmail({
-          to: receiverEmail,
-          subject: `Shipment Created - ${trackingNumber}`,
-          html: `
-          <h2>Shipment Created</h2>
+    // Return response immediately
+res.status(201).json({
+  success: true,
+  shipment,
+});
 
-          <p>Hello ${receiverName},</p>
+// Send email in the background
+if (receiverEmail) {
+  sendEmail({
+    to: receiverEmail,
+    subject: `Shipment Created - ${trackingNumber}`,
+    html: `
+      <h2>Shipment Created</h2>
 
-          <p>Your shipment has been created successfully.</p>
+      <p>Hello ${receiverName},</p>
 
-          <table cellpadding="8">
+      <p>Your shipment has been created successfully.</p>
 
-            <tr>
-              <td><strong>Tracking Number</strong></td>
-              <td>${trackingNumber}</td>
-            </tr>
+      <table cellpadding="8">
+        <tr>
+          <td><strong>Tracking Number</strong></td>
+          <td>${trackingNumber}</td>
+        </tr>
 
-            <tr>
-              <td><strong>Origin</strong></td>
-              <td>${origin}</td>
-            </tr>
+        <tr>
+          <td><strong>Origin</strong></td>
+          <td>${origin}</td>
+        </tr>
 
-            <tr>
-              <td><strong>Destination</strong></td>
-              <td>${destination}</td>
-            </tr>
+        <tr>
+          <td><strong>Destination</strong></td>
+          <td>${destination}</td>
+        </tr>
 
-            <tr>
-              <td><strong>Status</strong></td>
-              <td>${status || "Processing"}</td>
-            </tr>
+        <tr>
+          <td><strong>Status</strong></td>
+          <td>${status || "Processing"}</td>
+        </tr>
+      </table>
 
-          </table>
+      <p>
+        You can track your shipment anytime on the
+        Welsna Logistics website.
+      </p>
 
-          <p>
-            You can track your shipment anytime on the
-            Welsna Logistics website.
-          </p>
+      <br>
 
-          <br/>
+      <strong>Welsna Logistics</strong>
+    `,
+  }).catch((err) => {
+    console.error("Shipment Email Error:", err);
+  });
+}
 
-          <strong>Welsna Logistics</strong>
-          `,
-        });
-      } catch (emailError) {
-        console.error(emailError);
-      }
-    }
-
-    res.status(201).json({
-      success: true,
-      shipment,
-    });
   } catch (error) {
     console.error(error);
 
@@ -112,6 +111,7 @@ export const createShipment = async (req, res) => {
     });
   }
 };
+
 
 /**
  * GET ALL SHIPMENTS
@@ -231,56 +231,54 @@ export const addTrackingHistory = async (req, res) => {
 
     // Email receiver
 
-    if (shipment.receiverEmail) {
-      try {
-        await sendEmail({
-          to: shipment.receiverEmail,
-          subject: `Shipment Update - ${shipment.trackingNumber}`,
-          html: `
-          <h2>Shipment Status Updated</h2>
+    // Respond immediately
+res.json({
+  success: true,
+  shipment,
+});
 
-          <p>Hello ${shipment.receiverName},</p>
+// Send update email in background
+if (shipment.receiverEmail) {
+  sendEmail({
+    to: shipment.receiverEmail,
+    subject: `Shipment Update - ${shipment.trackingNumber}`,
+    html: `
+      <h2>Shipment Status Updated</h2>
 
-          <table cellpadding="8">
+      <p>Hello ${shipment.receiverName},</p>
 
-            <tr>
-              <td><strong>Tracking Number</strong></td>
-              <td>${shipment.trackingNumber}</td>
-            </tr>
+      <table cellpadding="8">
+        <tr>
+          <td><strong>Tracking Number</strong></td>
+          <td>${shipment.trackingNumber}</td>
+        </tr>
 
-            <tr>
-              <td><strong>Status</strong></td>
-              <td>${status}</td>
-            </tr>
+        <tr>
+          <td><strong>Status</strong></td>
+          <td>${status}</td>
+        </tr>
 
-            <tr>
-              <td><strong>Current Location</strong></td>
-              <td>${location}</td>
-            </tr>
+        <tr>
+          <td><strong>Current Location</strong></td>
+          <td>${location}</td>
+        </tr>
 
-            <tr>
-              <td><strong>Remark</strong></td>
-              <td>${remark}</td>
-            </tr>
+        <tr>
+          <td><strong>Remark</strong></td>
+          <td>${remark}</td>
+        </tr>
+      </table>
 
-          </table>
+      <p>
+        Thank you for choosing Welsna Logistics.
+      </p>
 
-          <p>
-            Thank you for choosing Welsna Logistics.
-          </p>
-
-          <strong>Welsna Logistics</strong>
-          `,
-        });
-      } catch (emailError) {
-        console.error(emailError);
-      }
-    }
-
-    res.json({
-      success: true,
-      shipment,
-    });
+      <strong>Welsna Logistics</strong>
+    `,
+  }).catch((err) => {
+    console.error("Shipment Update Email Error:", err);
+  });
+}
   } catch (error) {
     console.error(error);
 

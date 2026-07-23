@@ -55,20 +55,21 @@ const AuthenticatedApp = () => {
   />
 
   <Route
-    path="/admin"
-    element={
-      <ProtectedRoute>
-        <AdminLayout />
-      </ProtectedRoute>
-    }
-  >
+  path="/admin"
+  element={
+    <ProtectedRoute>
+      <AdminLayout />
+    </ProtectedRoute>
+  }
+>
+    <Route index element={<Dashboard />} />
     <Route path="dashboard" element={<Dashboard />} />
     <Route path="shipments" element={<Shipments />} />
     <Route path="quotes" element={<Quotes />} />
     <Route path="contacts" element={<Contacts />} />
     <Route path="users" element={<Users />} />
     <Route path="settings" element={<Settings />} />
-  </Route>
+</Route>
 
   <Route path="*" element={<PageNotFound />} />
 
