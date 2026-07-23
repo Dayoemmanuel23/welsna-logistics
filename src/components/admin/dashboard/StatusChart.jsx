@@ -13,13 +13,13 @@ ChartJS.register(
   Legend
 );
 
-export default function StatusChart({ data }) {
+export default function StatusChart({ data = [] }) {
   const chartData = {
-    labels: data.map((item) => item.status),
+    labels: data.map((item) => item._id),
 
     datasets: [
       {
-        data: data.map((item) => item.count),
+        data: data.map((item) => item.value),
 
         backgroundColor: [
           "#06b6d4",

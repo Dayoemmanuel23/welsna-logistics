@@ -17,15 +17,31 @@ ChartJS.register(
   Legend
 );
 
-export default function QuoteChart({ data }) {
+const MONTHS = [
+  "",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+export default function QuoteChart({ data = [] }) {
   const chartData = {
-    labels: data.map((item) => item.month),
+    labels: data.map((item) => MONTHS[item._id]),
 
     datasets: [
       {
         label: "Quotes",
 
-        data: data.map((item) => item.count),
+        data: data.map((item) => item.total),
 
         backgroundColor: "#f97316",
       },
