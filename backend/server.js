@@ -64,9 +64,6 @@ app.use(
   })
 );
 
-// Handle Preflight Requests
-app.options("*", cors());
-
 /*
 |--------------------------------------------------------------------------
 | Health Routes
