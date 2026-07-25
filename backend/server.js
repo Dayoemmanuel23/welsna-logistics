@@ -26,25 +26,22 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "https://welsna-frontend.onrender.com",
+  "https://welsnanigerialtd.com",
+  "https://www.welsnanigerialtd.com",
 ];
 
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      return callback(new Error("Not allowed by CORS"));
+      callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
   })
 );
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 /*
 |--------------------------------------------------------------------------
