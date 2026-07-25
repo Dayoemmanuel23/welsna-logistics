@@ -13,6 +13,7 @@ import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
+// Connect MongoDB
 connectDB();
 
 const app = express();
@@ -23,6 +24,11 @@ const app = express();
 |--------------------------------------------------------------------------
 */
 
+// Body Parser
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Allowed Frontend URLs
 const allowedOrigins = [
   "http://localhost:5173",
   "https://welsna-frontend.onrender.com",
@@ -30,39 +36,64 @@ const allowedOrigins = [
   "https://www.welsnanigerialtd.com",
 ];
 
+// CORS
 app.use(
   cors({
-    origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+    origin: (origin, callback) => {
+      // Allow Postman/mobile apps/no-origin requests
+      if (!origin) {
         return callback(null, true);
       }
 
-      callback(new Error("Not allowed by CORS"));
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.log("Blocked Origin:", origin);
+
+      return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Origin",
+      "Content-Type",
+      "Authorization",
+      "Accept",
+    ],
   })
 );
 
+// Handle Preflight Requests
+app.options("*", cors());
+
 /*
 |--------------------------------------------------------------------------
-| Routes
+| Health Routes
 |--------------------------------------------------------------------------
 */
 
 app.get("/", (req, res) => {
-  res.json({
+  res.status(200).json({
     success: true,
-    message: "Backend Updated Successfully",
+    message: "Welsna Logistics Backend Running",
     version: "2.0.0",
   });
 });
 
 app.get("/health", (req, res) => {
-  res.json({
+  res.status(200).json({
     success: true,
     status: "OK",
+    uptime: process.uptime(),
   });
 });
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+*/
 
 app.use("/api/auth", authRoutes);
 app.use("/api/shipments", shipmentRoutes);
@@ -73,7 +104,7 @@ app.use("/api/users", userRoutes);
 
 /*
 |--------------------------------------------------------------------------
-| 404
+| 404 Handler
 |--------------------------------------------------------------------------
 */
 
@@ -86,7 +117,7 @@ app.use((req, res) => {
 
 /*
 |--------------------------------------------------------------------------
-| Error Handler
+| Global Error Handler
 |--------------------------------------------------------------------------
 */
 
