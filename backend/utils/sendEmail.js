@@ -1,45 +1,16 @@
-import nodemailer from "nodemailer";
+import { BrevoClient } from "@getbrevo/brevo";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-console.log("EMAIL_USER:", process.env.EMAIL_USER);
-console.log(
-  "EMAIL_PASSWORD exists:",
-  !!process.env.EMAIL_PASSWORD
-);
+const apiKey = process.env.BREVO_API_KEY;
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: Number(process.env.EMAIL_PORT),
-  secure: process.env.EMAIL_SECURE === "true",
+if (!apiKey) {
+  console.error("❌ BREVO_API_KEY is not configured");
+}
 
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-
-  name: "mail.welsnanigerialtd.com",
-
-  tls: {
-    rejectUnauthorized: false,
-  },
-
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000,
-
-  logger: true,
-  debug: true,
-});
-
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("❌ SMTP Connection Failed");
-    console.error(error);
-  } else {
-    console.log("✅ SMTP Server is ready");
-  }
+const brevo = new BrevoClient({
+  apiKey,
 });
 
 export const sendEmail = async ({
@@ -48,18 +19,47 @@ export const sendEmail = async ({
   html,
 }) => {
   try {
-    await transporter.sendMail({
-      from:
-        process.env.EMAIL_FROM ||
-        `"Welsna Logistics" <${process.env.EMAIL_USER}>`,
-      to,
+    if (!apiKey) {
+      throw new Error("BREVO_API_KEY is not configured");
+    }
+
+    if (!process.env.EMAIL_FROM) {
+      throw new Error("EMAIL_FROM is not configured");
+    }
+
+    if (!to) {
+      throw new Error("Recipient email address is required");
+    }
+
+    const result = await brevo.transactionalEmails.sendTransacEmail({
+      sender: {
+        name: "Welsna Logistics",
+        email: process.env.EMAIL_FROM,
+      },
+
+      to: [
+        {
+          email: to,
+        },
+      ],
+
       subject,
-      html,
+      htmlContent: html,
     });
 
-    console.log(`✅ Email sent to ${to}`);
+    console.log(`✅ Email sent successfully to ${to}`);
+    console.log("Brevo Message ID:", result.messageId);
+
+    return result;
   } catch (error) {
-    console.error("❌ Email Error:", error);
+    console.error("❌ Brevo Email Error:");
+
+    console.error("Message:", error?.message || error);
+
+    if (error?.body) {
+      console.error("Brevo response:", error.body);
+    }
+
     throw error;
   }
 };
