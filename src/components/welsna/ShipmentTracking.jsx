@@ -242,7 +242,9 @@ setResult(data.shipment);
   };
 
   return (
-    <div id="track" className="w-full">
+    <div
+  id="track"
+  className="w-full scroll-mt-28">
       <form
         onSubmit={handleTrack}
         className="flex flex-col sm:flex-row gap-3 p-2 bg-white rounded-2xl shadow-2xl"

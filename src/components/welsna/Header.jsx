@@ -22,10 +22,24 @@ export default function Header() {
   }, []);
 
   const handleNav = (href) => {
-    setMenuOpen(false);
-    const el = document.querySelector(href);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
-  };
+  setMenuOpen(false);
+
+  const el = document.querySelector(href);
+
+  if (el) {
+    const headerOffset = 110;
+    const elementPosition =
+      el.getBoundingClientRect().top + window.scrollY;
+
+    const offsetPosition =
+      elementPosition - headerOffset;
+
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: "smooth",
+    });
+  }
+};
 
   return (
     <header
